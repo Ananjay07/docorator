@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docorator</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-feather"></i>
+                <span>Docorator</span>
+            </div>
+            <nav>
+                <a href="/static/dashboard.html" class="nav-btn" style="text-decoration:none; text-align:center;">
+                    <i class="fa-solid fa-table-columns"></i> Dashboard
+                </a>
+                <a href="/static/profile.html" class="nav-btn" style="text-decoration:none; text-align:center;">
+                    <i class="fa-solid fa-user"></i> Profile
+                </a>
+                <button class="nav-btn active" data-mode="manual" onclick="switchMode('manual')">
+                    <i class="fa-solid fa-pen-nib"></i> Manual
+                </button>
+                <button class="nav-btn" data-mode="guided" onclick="switchMode('guided')">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI Assisted
+                </button>
+                <button class="nav-btn" onclick="logout()"
+                    style="margin-top:20px; border-top:1px solid #334155; padding-top:20px;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <h1 id="mode-title">Manual Creation</h1>
+                <p id="mode-desc">Fill in the details below to generate your document.</p>
+            </header>
+
+            <div class="card">
+                <div class="form-group">
+                    <label>Document Type</label>
+                    <select id="doc-type">
+                        <option value="resume">Resume</option>
+                        <option value="sop">Statement of Purpose (SOP)</option>
+                        <option value="letter">Formal Letter</option>
+                        <option value="contract">Contract</option>
+                        <option value="report">Report</option>
+                    </select>
+                </div>
+
+                <!-- Personal Details (Common to all) -->
+                <div class="section-title">Personal Details</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="field-name" placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="field-email" placeholder="john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" id="field-phone" placeholder="+1 234 567 890">
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="field-location" placeholder="New York, USA">
+                    </div>
+                </div>
+
+                <!-- Manual Mode Specific Inputs -->
+                <div id="manual-inputs" class="mode-section">
+                    <!-- RESUME INPUTS -->
+                    <div id="inputs-resume">
+                        <div class="section-title">Professional Summary</div>
+                        <textarea id="field-summary" rows="4" placeholder="Brief summary of your profile..."></textarea>
+
+                        <div class="section-title">Skills</div>
+                        <div id="skills-list" class="dynamic-list"></div>
+                        <div class="add-row">
+                            <input type="text" id="new-skill" placeholder="Add a skill (e.g. Python)">
+                            <button type="button" onclick="addSkill()" class="btn-small"><i
+                                    class="fa-solid fa-plus"></i></button>
+                        </div>
+
+                        <div class="section-title">Experience</div>
+                        <div id="experience-list" class="dynamic-list"></div>
+                        <div class="input-group-box">
+                            <input type="text" id="exp-title" placeholder="Job Title">
+                            <input type="text" id="exp-company" placeholder="Company">
+                            <input type="text" id="exp-period" placeholder="Period (e.g. 2020-2022)">
+                            <textarea id="exp-bullets" rows="2" placeholder="Bullets (one per line)"></textarea>
+                            <button type="button" onclick="addExp()" class="btn-outline"><i
+                                    class="fa-solid fa-plus"></i> Add Experience</button>
+                        </div>
+
+                        <div class="section-title">Projects</div>
+                        <div id="project-list" class="dynamic-list"></div>
+                        <div class="input-group-box">
+                            <input type="text" id="proj-name" placeholder="Project Name">
+                            <input type="text" id="proj-stack" placeholder="Tech Stack">
+                            <textarea id="proj-desc" rows="2" placeholder="Description"></textarea>
+                            <button type="button" onclick="addProj()" class="btn-outline"><i
+                                    class="fa-solid fa-plus"></i> Add Project</button>
+                        </div>
+
+                        <div class="section-title">Education</div>
+                        <div id="edu-list" class="dynamic-list"></div>
+                        <div class="input-group-box">
+                            <input type="text" id="edu-degree" placeholder="Degree">
+                            <input type="text" id="edu-institute" placeholder="Institute">
+                            <input type="text" id="edu-year" placeholder="Year">
+                            <input type="text" id="edu-grade" placeholder="CGPA / Grade">
+                            <button type="button" onclick="addEdu()" class="btn-outline"><i
+                                    class="fa-solid fa-plus"></i> Add Education</button>
+                        </div>
+
+                        <div class="section-title">Achievements</div>
+                        <div id="ach-list" class="dynamic-list"></div>
+                        <div class="add-row">
+                            <input type="text" id="new-ach" placeholder="Add achievement">
+                            <button type="button" onclick="addAch()" class="btn-small"><i
+                                    class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- SOP INPUTS -->
+                    <div id="inputs-sop" style="display:none;">
+                        <div class="section-title">Target Program</div>
+                        <div class="grid-2">
+                            <input type="text" id="sop-university" placeholder="Target University">
+                            <input type="text" id="sop-program" placeholder="Program Name (e.g. MS in Azure Cloud)">
+                        </div>
+
+                        <div class="section-title">Background & Motivation</div>
+                        <textarea id="sop-background" rows="6"
+                            placeholder="Describe your academic/professional background and what motivated you to pursue this field..."></textarea>
+
+                        <div class="section-title">Why this University?</div>
+                        <textarea id="sop-why-uni" rows="4"
+                            placeholder="Specific reasons for choosing this university (professors, labs, curriculum)..."></textarea>
+
+                        <div class="section-title">Future Goals</div>
+                        <textarea id="sop-goals" rows="4"
+                            placeholder="Short-term and long-term career goals..."></textarea>
+                    </div>
+
+                    <!-- LETTER INPUTS -->
+                    <div id="inputs-letter" style="display:none;">
+                        <div class="section-title">Sender Details</div>
+                        <input type="text" id="letter-sender-name" placeholder="Sender Name">
+                        <textarea id="letter-sender-addr" rows="2" placeholder="Sender Address"></textarea>
+
+                        <div class="section-title">Receiver Details</div>
+                        <input type="text" id="letter-receiver-name" placeholder="Receiver Name">
+                        <textarea id="letter-receiver-addr" rows="2" placeholder="Receiver Address"></textarea>
+                        <input type="text" id="letter-salutation" placeholder="Salutation (e.g. Dear Mr. Smith)">
+
+                        <div class="section-title">Content</div>
+                        <input type="text" id="letter-subject" placeholder="Subject">
+                        <input type="text" id="letter-date" placeholder="Date">
+                        <textarea id="letter-body" rows="6" placeholder="Body of the letter..."></textarea>
+                    </div>
+
+                    <!-- CONTRACT INPUTS -->
+                    <div id="inputs-contract" style="display:none;">
+                        <input type="text" id="cont-party-a" placeholder="Party A Name">
+                        <input type="text" id="cont-party-b" placeholder="Party B Name">
+                        <input type="text" id="cont-date-a" placeholder="Date A">
+                        <input type="text" id="cont-date-b" placeholder="Date B">
+
+                        <div class="section-title">Terms</div>
+                        <textarea id="cont-scope" rows="3" placeholder="Scope of Work"></textarea>
+                        <textarea id="cont-resp" rows="3" placeholder="Responsibilities"></textarea>
+                        <textarea id="cont-payment" rows="3" placeholder="Payment Terms"></textarea>
+                        <textarea id="cont-confidentiality" rows="2" placeholder="Confidentiality Clause"></textarea>
+                        <textarea id="cont-termination" rows="2" placeholder="Termination Clause"></textarea>
+                    </div>
+
+                    <!-- REPORT INPUTS -->
+                    <div id="inputs-report" style="display:none;">
+                        <input type="text" id="rep-title" placeholder="Report Title">
+                        <input type="text" id="rep-author" placeholder="Author">
+                        <input type="text" id="rep-date" placeholder="Date">
+
+                        <div class="section-title">Content</div>
+                        <textarea id="rep-summary" rows="3" placeholder="Executive Summary"></textarea>
+                        <textarea id="rep-objectives" rows="3" placeholder="Objectives"></textarea>
+                        <textarea id="rep-methodology" rows="3" placeholder="Methodology"></textarea>
+                        <textarea id="rep-findings" rows="3" placeholder="Findings"></textarea>
+                        <textarea id="rep-recs" rows="3" placeholder="Recommendations"></textarea>
+                        <textarea id="rep-conclusion" rows="3" placeholder="Conclusion"></textarea>
+                    </div>
+
+
+                    <!-- AI Context Input (Only for AI Assisted Mode) -->
+                    <div id="ai-context-container"
+                        style="display:none; margin-bottom: 20px; padding: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
+                        <label style="font-weight:600; color:#166534;"><i class="fa-solid fa-robot"></i> AI Instructions
+                            / Intent</label>
+                        <p style="font-size: 0.9em; color: #15803d; margin-bottom: 8px;">Briefly describe your goal
+                            (e.g., "Emphasize leadership skills", "Make it strictly formal").</p>
+                        <textarea id="ai-context" rows="2"
+                            placeholder="e.g., I want to highlight my cloud certifications..."></textarea>
+                    </div>
+
+                    <button class="generate-btn" onclick="generateDocument()">
+                        <i class="fa-solid fa-file-export"></i> Generate Document
+                    </button>
+                </div>
+
+                <!-- Result -->
+                <div id="result-area" class="result-hidden">
+                    <div class="success-message">
+                        <i class="fa-solid fa-check-circle"></i> Document Generated!
+                    </div>
+                    <div class="action-buttons">
+                        <a id="download-docx" href="#" class="btn secondary"><i class="fa-solid fa-file-word"></i>
+                            Download
+                            DOCX</a>
+                        <a id="download-pdf" href="#" class="btn primary"><i class="fa-solid fa-file-pdf"></i> Download
+                            PDF</a>
+                    </div>
+                </div>
+        </main>
+    </div>
+
+    <!-- Modals removed -->
+
+    <script src="/static/auth.js"></script>
+    <script>checkAuth();</script>
+    <script src="/static/app.js?v=11"></script>
+</body>
+
+</html>

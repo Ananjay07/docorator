@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docorator - Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo"><i class="fa-solid fa-feather"></i></div>
+            <div class="auth-title">Create Account</div>
+            <div class="auth-subtitle">Join Docorator today</div>
+        </div>
+
+        <form onsubmit="signup(event)" class="auth-form">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" required placeholder="name@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="Create a password">
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <div class="form-group" style="flex:1;">
+                    <label>Full Name</label>
+                    <input type="text" id="full_name" required placeholder="John Doe">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Profession</label>
+                    <input type="text" id="profession" required placeholder="Developer">
+                </div>
+            </div>
+
+            <!-- Security Question Section -->
+            <div class="form-group">
+                <label>Security Question</label>
+                <select id="security_question" required>
+                    <option value="" disabled selected>Select a question...</option>
+                    <option value="mother_maiden_name">What is your mother's maiden name?</option>
+                    <option value="first_pet">What was the name of your first pet?</option>
+                    <option value="first_school">What was the name of your first school?</option>
+                    <option value="birth_city">In which city were you born?</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Security Answer</label>
+                <input type="text" id="security_answer" required placeholder="Your answer (case sensitive)">
+            </div>
+
+            <button type="submit" class="auth-btn">Sign Up</button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="/static/login.html">Log In</a>
+        </div>
+    </div>
+
+    <script src="/static/auth.js"></script>
+    <script>
+        async function signup(e) {
+            e.preventDefault();
+            const btn = document.querySelector('.auth-btn');
+            const originalText = btn.innerText;
+            btn.innerText = 'Creating Account...';
+            btn.disabled = true;
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const full_name = document.getElementById('full_name').value;
+            const profession = document.getElementById('profession').value;
+            const security_question = document.getElementById('security_question').value;
+            const security_answer = document.getElementById('security_answer').value;
+
+            try {
+                const res = await fetch('/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        full_name,
+                        profession,
+                        security_question,
+                        security_answer
+                    })
+                });
+
+                if (res.ok) {
+                    alert('Account created! Please log in.');
+                    window.location.href = '/static/login.html';
+                } else {
+                    const data = await res.json();
+                    alert(data.detail || 'Signup failed');
+                }
+            } catch (err) {
+                alert('Connection error');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

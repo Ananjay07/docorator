@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docorator - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo"><i class="fa-solid fa-feather"></i></div>
+            <div class="auth-title">Welcome Back</div>
+            <div class="auth-subtitle">Login to access your dashboard</div>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" onsubmit="login(event)" class="auth-form">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" required placeholder="name@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="Enter your password">
+            </div>
+
+            <div style="text-align:right; margin-bottom:1.5rem;">
+                <a href="#" onclick="showResetFlow(event)"
+                    style="font-size:0.9rem; color:#4f46e5; text-decoration:none;">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="auth-btn">Log In</button>
+        </form>
+
+        <!-- Forgot Password Flow (Initially Hidden) -->
+        <div id="reset-flow" style="display:none;" class="auth-form">
+            <div style="text-align:left; margin-bottom:1rem;">
+                <button onclick="hideResetFlow()"
+                    style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:#64748b;"><i
+                        class="fa-solid fa-arrow-left"></i> Back</button>
+            </div>
+            <h3 style="margin-bottom:1rem;">Reset Password</h3>
+
+            <!-- Step 1: Get Email -->
+            <div id="reset-step-1">
+                <p style="margin-bottom:1rem; font-size:0.9rem; color:#64748b;">Enter your email to find your security
+                    question.</p>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="reset-email" placeholder="name@example.com">
+                </div>
+                <button onclick="fetchQuestion()" class="auth-btn">Next</button>
+            </div>
+
+            <!-- Step 2: Answer Question -->
+            <div id="reset-step-2" style="display:none;">
+                <div class="form-group">
+                    <label>Security Question</label>
+                    <div id="question-display"
+                        style="padding:10px; background:#e0e7ff; border-radius:8px; color:#4338ca; font-weight:600; font-size:0.95rem;">
+                        -</div>
+                </div>
+                <div class="form-group">
+                    <label>Your Answer</label>
+                    <input type="text" id="reset-answer" placeholder="Your answer">
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="reset-new-pass" placeholder="New password">
+                </div>
+                <button onclick="resetPassword()" class="auth-btn">Reset Password</button>
+            </div>
+        </div>
+
+        <div class="auth-footer">
+            Don't have an account? <a href="/static/signup.html">Sign Up</a>
+        </div>
+    </div>
+
+    <script src="/static/auth.js"></script>
+    <script>
+        async function login(e) {
+            e.preventDefault();
+            const btn = document.querySelector('#login-form .auth-btn');
+            const origText = btn.innerText;
+            btn.innerText = 'Logging in...';
+            btn.disabled = true;
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // Using URLSearchParams for OAuth2 form data
+                const formData = new URLSearchParams();
+                formData.append('username', email); // FastAPI OAuth2 expects 'username'
+                formData.append('password', password);
+
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    setToken(data.access_token);
+                    window.location.href = '/static/dashboard.html';
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || "Login failed");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Connection error");
+            } finally {
+                btn.innerText = origText;
+                btn.disabled = false;
+            }
+        }
+
+        // --- Forgot Password Logic ---
+        function showResetFlow(e) {
+            e.preventDefault();
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('reset-flow').style.display = 'block';
+            document.querySelector('.auth-title').innerText = 'Recover Account';
+            document.querySelector('.auth-subtitle').innerText = 'Answer your security question';
+        }
+
+        function hideResetFlow() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('reset-flow').style.display = 'none';
+            document.getElementById('reset-step-1').style.display = 'block';
+            document.getElementById('reset-step-2').style.display = 'none';
+            document.querySelector('.auth-title').innerText = 'Welcome Back';
+            document.querySelector('.auth-subtitle').innerText = 'Login to access your dashboard';
+
+            // Clear inputs
+            document.getElementById('reset-email').value = '';
+            document.getElementById('reset-answer').value = '';
+            document.getElementById('reset-new-pass').value = '';
+        }
+
+        async function fetchQuestion() {
+            const email = document.getElementById('reset-email').value;
+            if (!email) return alert("Please enter your email");
+
+            try {
+                const res = await fetch('/auth/get-question', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const qMap = {
+                        "mother_maiden_name": "What is your mother's maiden name?",
+                        "first_pet": "What was the name of your first pet?",
+                        "first_school": "What was the name of your first school?",
+                        "birth_city": "In which city were you born?"
+                    };
+
+                    document.getElementById('question-display').innerText = qMap[data.question] || data.question;
+                    document.getElementById('reset-step-1').style.display = 'none';
+                    document.getElementById('reset-step-2').style.display = 'block';
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || "User not found");
+                }
+            } catch (e) {
+                alert("Error fetching question");
+            }
+        }
+
+        async function resetPassword() {
+            const email = document.getElementById('reset-email').value;
+            const answer = document.getElementById('reset-answer').value;
+            const newPass = document.getElementById('reset-new-pass').value;
+
+            if (!answer || !newPass) return alert("Please fill all fields");
+
+            try {
+                const res = await fetch('/auth/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        security_answer: answer,
+                        new_password: newPass
+                    })
+                });
+
+                if (res.ok) {
+                    alert("Password reset successfully! You can now login.");
+                    hideResetFlow();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || "Reset failed");
+                }
+            } catch (e) {
+                alert("Error resetting password");
+            }
+        }
+    </script>
+</body>
+
+</html>

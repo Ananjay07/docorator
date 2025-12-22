@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docorator - Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .profile-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .profile-row {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 1rem;
+        }
+
+        .profile-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: 500;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .value {
+            color: #1e293b;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            background: #e0e7ff;
+            color: #4f46e5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-feather"></i>
+                <span>Docorator</span>
+            </div>
+            <nav>
+                <a href="/static/dashboard.html" class="nav-btn" style="text-decoration:none; text-align:center;">
+                    <i class="fa-solid fa-table-columns"></i> Dashboard
+                </a>
+                <button class="nav-btn active">
+                    <i class="fa-solid fa-user"></i> Profile
+                </button>
+                <a href="/" class="nav-btn" style="text-decoration:none; text-align:center;">
+                    <i class="fa-solid fa-plus"></i> Create New
+                </a>
+                <button class="nav-btn" onclick="logout()"
+                    style="margin-top:20px; border-top:1px solid #334155; padding-top:20px;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <h1>User Profile</h1>
+                <p>Manage your account details and settings.</p>
+            </header>
+
+            <div id="loading" style="text-align:center;">Loading...</div>
+            <div id="profile-card" class="profile-card" style="display:none;">
+                <div class="profile-header">
+                    <div class="avatar" id="avatar-initials">U</div>
+                    <div style="flex:1;">
+                        <div class="value" id="disp-name">User Name</div>
+                        <div class="label" id="disp-role">Role</div>
+                    </div>
+                    <div>
+                        <button id="edit-btn" onclick="toggleEdit()" class="generate-btn btn-sm"
+                            style="background:#f59e0b; border:none;">
+                            <i class="fa-solid fa-pen"></i> Edit Profile
+                        </button>
+                        <div id="save-container" style="display:none; gap:10px;">
+                            <button id="save-btn" onclick="saveProfile()" class="generate-btn btn-sm"
+                                style="background:#2563eb; border:none;">
+                                <i class="fa-solid fa-check"></i> Save
+                            </button>
+                            <button onclick="cancelEdit()" class="generate-btn btn-sm"
+                                style="background:#94a3b8; border:none;">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-row">
+                    <div class="label">Full Name</div>
+                    <div class="value view-mode" id="val-name">-</div>
+                    <input type="text" id="inp-name" class="edit-mode"
+                        style="display:none; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; margin-top:5px;"
+                        placeholder="Full Name">
+                </div>
+                <div class="profile-row">
+                    <div class="label">Profession</div>
+                    <div class="value view-mode" id="val-prof">-</div>
+                    <input type="text" id="inp-prof" class="edit-mode"
+                        style="display:none; width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; margin-top:5px;"
+                        placeholder="Profession e.g. Student, Developer">
+                </div>
+                <div class="profile-row">
+                    <div class="label">Email Address</div>
+                    <div class="value" id="val-email">-</div>
+                    <!-- Email is usually immutable or requires special flow -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/auth.js"></script>
+    <script>
+        checkAuth();
+
+        let userData = {};
+
+        async function loadProfile() {
+            try {
+                const res = await authenticatedFetch('/auth/me');
+                if (!res) return;
+
+                userData = await res.json();
+                renderProfile();
+            } catch (e) {
+                document.getElementById('loading').textContent = "Failed to load profile.";
+            }
+        }
+
+        function renderProfile() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('profile-card').style.display = 'block';
+
+            // Display Values
+            document.getElementById('disp-name').textContent = userData.full_name || "User";
+            document.getElementById('disp-role').textContent = userData.profession || "Member";
+
+            document.getElementById('val-name').textContent = userData.full_name || "-";
+            document.getElementById('val-prof').textContent = userData.profession || "-";
+            document.getElementById('val-email').textContent = userData.email;
+
+            // Input Values (hidden by default)
+            document.getElementById('inp-name').value = userData.full_name || "";
+            document.getElementById('inp-prof').value = userData.profession || "";
+
+            const initials = (userData.full_name || userData.email).slice(0, 1).toUpperCase();
+            document.getElementById('avatar-initials').textContent = initials;
+        }
+
+        function toggleEdit() {
+            const viewEls = document.querySelectorAll('.view-mode');
+            const editEls = document.querySelectorAll('.edit-mode');
+            const isEditing = document.getElementById('edit-btn').style.display === 'none';
+
+            if (isEditing) {
+                // Switch to View
+                document.getElementById('edit-btn').style.display = 'inline-block';
+                document.getElementById('save-container').style.display = 'none';
+                viewEls.forEach(el => el.style.display = 'block');
+                editEls.forEach(el => el.style.display = 'none');
+            } else {
+                // Switch to Edit
+                document.getElementById('edit-btn').style.display = 'none';
+                document.getElementById('save-container').style.display = 'flex'; // flex for gap
+                viewEls.forEach(el => el.style.display = 'none');
+                editEls.forEach(el => el.style.display = 'block');
+            }
+        }
+
+        async function saveProfile() {
+            const newName = document.getElementById('inp-name').value.trim();
+            const newProf = document.getElementById('inp-prof').value.trim();
+
+            const btn = document.getElementById('save-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            try {
+                const res = await authenticatedFetch('/auth/me', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        full_name: newName,
+                        profession: newProf
+                    })
+                });
+
+                if (res && res.ok) {
+                    userData = await res.json();
+                    renderProfile(); // Update view
+                    toggleEdit(); // Switch back to view mode
+                } else {
+                    alert("Failed to save profile.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error saving profile");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function cancelEdit() {
+            toggleEdit();
+        }
+
+        loadProfile();
+    </script>
+</body>
+
+</html>
