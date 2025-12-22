@@ -1,0 +1,41 @@
+name: Build and Deploy Docorator to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Log in to Azure Container Registry
+      run: |
+        az acr login --name Docorator
+
+    - name: Build Docker image
+      run: |
+        docker build -t docorator:latest .
+
+    - name: Tag Docker image
+      run: |
+        docker tag docorator:latest docorator.azurecr.io/docorator:latest
+
+    - name: Push Docker image to ACR
+      run: |
+        docker push docorator.azurecr.io/docorator:latest
+
+    - name: Restart Azure App Service
+      run: |
+        az webapp restart \
+          --name docorator \
+          --resource-group DocGenGroup
